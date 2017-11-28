@@ -17,11 +17,7 @@ type Metric struct {
 func GetHello(verbose bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		metric := Metric{
-			Name:      "cpu",
-			Value:     24.1234,
-			Timestamp: time.Now().UTC().UnixNano(),
-		}
+		metric := NewMetric("cpu", 23.1234)
 
 		if verbose {
 			bodyData, err := json.Marshal(&metric)
@@ -32,8 +28,21 @@ func GetHello(verbose bool) http.Handler {
 			w.Write(bodyData)
 			return
 		} else {
-			w.WriteHeader(http.StatusAccepted)
 			w.Write([]byte("We've got a metric"))
 		}
 	})
+}
+
+// NewMetric is a constructor for a Metric
+func NewMetric(name string, value float64) *Metric {
+	return &Metric{
+		Name:      name,
+		Value:     value,
+		Timestamp: time.Now().UTC().UnixNano(),
+	}
+}
+
+// MillisecondTimestamp converts the timestamp to millisecond precision
+func (m *Metric) MillisecondTimestamp() int64 {
+	return m.Timestamp / 1000
 }
