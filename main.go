@@ -35,7 +35,7 @@ func main() {
 	fmt.Printf("binding to %s\n", portString)
 
 	// here we register our GetHello function in the web package to handle GET /hello
-	http.Handle("/hello", web.GetHello())
+	http.Handle("/hello", web.GetHello(friendly))
 
 	// ListenAndServe with no arguments will use the http package's DefaultServeMux to
 	// route requests to anything you've set up with http.Handle as above.
