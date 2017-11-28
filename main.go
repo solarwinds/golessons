@@ -1,12 +1,24 @@
 package main
 
 import (
-	"fmt"
-	// flag is a package from the standard library for parsing CLI flags
 	"flag"
+	"fmt"
 	"net/http"
+	"os"
+	"time"
+
+	"os/signal"
+
 	"github.com/solarwinds/golessons/web"
 )
+
+// startTime will hold the time that this code executed and is used to calculate
+// a runtime duration
+var startTime = time.Now()
+
+// sigIntChan will hold only a single value of type os.Signal and is used to catch
+// SIGINT
+var sigIntChan = make(chan os.Signal, 1)
 
 // friendly is a variable that is in scope everywhere in the main package
 var friendly bool
@@ -23,11 +35,15 @@ func init() {
 	flag.Parse()
 }
 
-
 func main() {
+	// signal package's Notify is used to tell the runtime what channel to put a
+	// received signal value on
+	signal.Notify(sigIntChan, os.Interrupt)
+	go processSigInt()
+
 	if friendly {
 		fmt.Println("Happy to see you, Gophers!")
-	}else{
+	} else {
 		fmt.Println("Ugh, now I see Gophers.")
 	}
 
@@ -40,4 +56,14 @@ func main() {
 	// ListenAndServe with no arguments will use the http package's DefaultServeMux to
 	// route requests to anything you've set up with http.Handle as above.
 	http.ListenAndServe(portString, nil)
+}
+
+// processSigInt will block until the channel has a value
+func processSigInt() {
+	<-sigIntChan // NOTE: this blocks until there's something on the channel!
+
+	fmt.Printf("\n[-] Caught interrupt\n")
+	runDuration := time.Since(startTime)
+	fmt.Printf("[*] Process ran for %v seconds\n", runDuration)
+	os.Exit(0)
 }
