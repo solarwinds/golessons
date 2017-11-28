@@ -10,6 +10,8 @@ We will be working with Git and GitHub in this workshop. If you haven't installe
 * Download official EXE: [https://git-scm.com/download/win](https://git-scm.com/download/win)
 
 #### macOS
+(macOS comes with Git pre-installed, but it's a good practice to control the installation so you can upgrade later if you wish)
+
 * `$> brew install git`
 
 #### Ubuntu
