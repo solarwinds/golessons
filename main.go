@@ -5,6 +5,8 @@ import (
 	// flag is a package from the standard library for parsing CLI flags
 	"flag"
 	"net/http"
+	"time"
+
 	"github.com/solarwinds/golessons/web"
 )
 
@@ -23,21 +25,29 @@ func init() {
 	flag.Parse()
 }
 
-
 func main() {
 	if friendly {
 		fmt.Println("Happy to see you, Gophers!")
-	}else{
+	} else {
 		fmt.Println("Ugh, now I see Gophers.")
 	}
 
+	// it's easy to make a literal value - don't forget commas at the end
+	// of *every* struct member line!
+	metric := web.Metric{
+		Name:      "cpu",
+		Value:     float64(24.123),
+		Timestamp: time.Now().UTC().UnixNano(),
+	}
+
+	fmt.Printf("Metric: %+v\n", metric)
+
 	portString := fmt.Sprintf(":%d", port)
+	muxAndServe(portString)
+}
+
+func muxAndServe(portString string) {
 	fmt.Printf("binding to %s\n", portString)
-
-	// here we register our GetHello function in the web package to handle GET /hello
 	http.Handle("/hello", web.GetHello(friendly))
-
-	// ListenAndServe with no arguments will use the http package's DefaultServeMux to
-	// route requests to anything you've set up with http.Handle as above.
 	http.ListenAndServe(portString, nil)
 }
