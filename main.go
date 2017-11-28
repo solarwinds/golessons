@@ -5,7 +5,6 @@ import (
 	// flag is a package from the standard library for parsing CLI flags
 	"flag"
 	"net/http"
-	"time"
 
 	"github.com/solarwinds/golessons/web"
 )
@@ -31,16 +30,6 @@ func main() {
 	} else {
 		fmt.Println("Ugh, now I see Gophers.")
 	}
-
-	// it's easy to make a literal value - don't forget commas at the end
-	// of *every* struct member line!
-	metric := web.Metric{
-		Name:      "cpu",
-		Value:     float64(24.123),
-		Timestamp: time.Now().UTC().UnixNano(),
-	}
-
-	fmt.Printf("Metric: %+v\n", metric)
 
 	portString := fmt.Sprintf(":%d", port)
 	muxAndServe(portString)

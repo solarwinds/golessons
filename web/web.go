@@ -1,27 +1,39 @@
 package web
 
 import (
+	"encoding/json"
 	"net/http"
+	"time"
 )
 
 // A struct lets us define a complex data type
 type Metric struct {
-	Name      string
-	Value     float64
-	Timestamp int64 // nanoseconds!
+	Name      string  `json:"name"`
+	Value     float64 `json:"value"`
+	Timestamp int64   `json:"timestamp"`
 }
 
-// GetHello returns an http.Handler, which is a function with a special signature. Any
-// function with this signature can be *cast* to an http.Handler and therefore used by
-// the http package's default multiplexer to handle requests.
+// GetHello's HTTP handler now creates and serializes a Metric
 func GetHello(verbose bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		metric := Metric{
+			Name:      "cpu",
+			Value:     24.1234,
+			Timestamp: time.Now().UTC().UnixNano(),
+		}
+
 		if verbose {
-			w.Write([]byte("Here's some awesome body content!\n"))
-			// good to put these here to ensure that this is the end of execution
+			bodyData, err := json.Marshal(&metric)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			w.Write(bodyData)
 			return
 		} else {
 			w.WriteHeader(http.StatusAccepted)
+			w.Write([]byte("We've got a metric"))
 		}
 	})
 }
