@@ -4,6 +4,8 @@ import (
 	"fmt"
 	// flag is a package from the standard library for parsing CLI flags
 	"flag"
+	"net/http"
+	"github.com/solarwinds/golessons/web"
 )
 
 // friendly is a variable that is in scope everywhere in the main package
@@ -24,11 +26,18 @@ func init() {
 
 func main() {
 	if friendly {
-		fmt.Println("Hello, Gophers!")
+		fmt.Println("Happy to see you, Gophers!")
 	}else{
-		fmt.Println("Goodbye, Gophers.")
+		fmt.Println("Ugh, now I see Gophers.")
 	}
 
 	portString := fmt.Sprintf(":%d", port)
 	fmt.Printf("binding to %s\n", portString)
+
+	// here we register our GetHello function in the web package to handle GET /hello
+	http.Handle("/hello", web.GetHello())
+
+	// ListenAndServe with no arguments will use the http package's DefaultServeMux to
+	// route requests to anything you've set up with http.Handle as above.
+	http.ListenAndServe(portString, nil)
 }
