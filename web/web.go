@@ -14,22 +14,21 @@ type Metric struct {
 }
 
 // GetHello's HTTP handler now creates and serializes a Metric
-func GetHello(verbose bool) http.Handler {
+func GetHello(friendly bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		metric := NewMetric("cpu", 23.1234)
 
-		if verbose {
-			bodyData, err := json.Marshal(&metric)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			w.Write(bodyData)
-			return
-		} else {
-			w.Write([]byte("We've got a metric"))
+		// reduce timestamp precision if `friendly` is true
+		if friendly {
+			metric.ReduceTimestampPrecision()
 		}
+		bodyData, err := json.Marshal(&metric)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Write(bodyData)
 	})
 }
 
@@ -45,4 +44,9 @@ func NewMetric(name string, value float64) *Metric {
 // MillisecondTimestamp converts the timestamp to millisecond precision
 func (m *Metric) MillisecondTimestamp() int64 {
 	return m.Timestamp / 1000
+}
+
+// ReduceTimestampPrecision changes the precision to be millisecond
+func (m *Metric) ReduceTimestampPrecision() {
+	m.Timestamp = m.MillisecondTimestamp()
 }
