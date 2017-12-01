@@ -33,12 +33,13 @@ func PostMetric(metricsChan chan<- *Metric) http.Handler {
 // ProcessMetrics takes a Metrics channel and a control channel and implements processing logic
 // until told to stop
 func ProcessMetrics(metricsChan <-chan *Metric, stopChan <-chan bool) {
+P:
 	for {
 		select {
 		case m := <-metricsChan:
 			log.Printf("processing metric - %+v\n", m)
 		case <-stopChan:
-			break
+			break P
 		}
 	}
 }

@@ -26,12 +26,17 @@ var friendly bool
 // port will hold the value of the TCP port we wish to bind to
 var port int
 
+// timeLimit will hold the value of how many metrics to accept
+var timeLimit int
+
 // init is a special function like main and is guaranteed to run before main
 func init() {
 	// This sets up a boolean flag, held in the `friendly` variable so that it's accessible everywhere
 	flag.BoolVar(&friendly, "friendly", false, "whether to print out a greeting")
 
 	flag.IntVar(&port, "port", 7777, "the TCP port to bind to")
+	flag.IntVar(&timeLimit, "time-limit", 0, "limit the number of seconds to run")
+
 	flag.Parse()
 }
 
@@ -48,8 +53,23 @@ func main() {
 	// handle processing of metrics
 	go web.ProcessMetrics(metricsChan, stopChan)
 
+	if timeLimit > 0 {
+		go turnOffWhenTimeExpires()
+	}
+
 	portString := fmt.Sprintf(":%d", port)
 	muxAndServe(portString)
+}
+
+func turnOffWhenTimeExpires() {
+	for {
+		if time.Since(startTime) > time.Duration(timeLimit)*time.Second {
+			stopChan <- true
+			break
+		}
+	}
+	close(stopChan)
+	close(metricsChan)
 }
 
 // processSigInt will block until the channel has a value
