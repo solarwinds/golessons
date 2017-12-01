@@ -45,6 +45,9 @@ func main() {
 		fmt.Println("Ugh, now I see Gophers.")
 	}
 
+	// handle processing of metrics
+	go web.ProcessMetrics(metricsChan, stopChan)
+
 	portString := fmt.Sprintf(":%d", port)
 	muxAndServe(portString)
 }
@@ -52,6 +55,9 @@ func main() {
 // processSigInt will block until the channel has a value
 func processSigInt() {
 	<-sigIntChan // NOTE: this blocks until there's something on the channel!
+
+	close(metricsChan)
+	close(stopChan)
 
 	fmt.Printf("\n[-] Caught interrupt\n")
 	runDuration := time.Since(startTime)
