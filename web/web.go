@@ -14,19 +14,24 @@ type Metric struct {
 	Timestamp int64   `json:"timestamp"`
 }
 
+var stopProcessing bool
+
 // PostMetric processes metrics
 func PostMetric(metricsChan chan<- *Metric) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var m = &Metric{}
-		decoder := json.NewDecoder(r.Body)
-		if err := decoder.Decode(m); err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
+		if !stopProcessing {
+			var m = &Metric{}
+			decoder := json.NewDecoder(r.Body)
+			if err := decoder.Decode(m); err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			metricsChan <- m
+			w.WriteHeader(http.StatusAccepted)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
 		}
-
-		metricsChan <- m
-		w.WriteHeader(http.StatusAccepted)
 	})
 }
 
@@ -39,6 +44,7 @@ P:
 		case m := <-metricsChan:
 			log.Printf("processing metric - %+v\n", m)
 		case <-stopChan:
+			stopProcessing = true
 			break P
 		}
 	}
