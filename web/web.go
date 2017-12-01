@@ -15,7 +15,7 @@ type Metric struct {
 }
 
 // PostMetric processes metrics
-func PostMetric() http.Handler {
+func PostMetric(metricsChan chan<- *Metric) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var m = &Metric{}
 		decoder := json.NewDecoder(r.Body)
@@ -25,13 +25,22 @@ func PostMetric() http.Handler {
 			return
 		}
 
-		log.Printf("processing metric - %+v\n", m)
-
-		// Simulate expensive operation with a half-second sleep
-		time.Sleep(500 * time.Millisecond)
-
+		metricsChan <- m
 		w.WriteHeader(http.StatusAccepted)
 	})
+}
+
+// ProcessMetrics takes a Metrics channel and a control channel and implements processing logic
+// until told to stop
+func ProcessMetrics(metricsChan <-chan *Metric, stopChan <-chan bool) {
+	for {
+		select {
+		case m := <-metricsChan:
+			log.Printf("processing metric - %+v\n", m)
+		case <-stopChan:
+			break
+		}
+	}
 }
 
 // GetHello's HTTP handler now creates and serializes a Metric

@@ -16,9 +16,9 @@ import (
 // a runtime duration
 var startTime = time.Now()
 
-// sigIntChan will hold only a single value of type os.Signal and is used to catch
-// SIGINT
 var sigIntChan = make(chan os.Signal, 1)
+var metricsChan = make(chan *web.Metric)
+var stopChan = make(chan bool)
 
 // friendly is a variable that is in scope everywhere in the main package
 var friendly bool
@@ -62,6 +62,6 @@ func processSigInt() {
 func muxAndServe(portString string) {
 	fmt.Printf("binding to %s\n", portString)
 	http.Handle("/hello", web.GetHello(friendly))
-	http.Handle("/metrics", web.PostMetric())
+	http.Handle("/metrics", web.PostMetric(metricsChan))
 	http.ListenAndServe(portString, nil)
 }
