@@ -62,6 +62,5 @@ func processSigInt() {
 func muxAndServe(portString string) {
 	fmt.Printf("binding to %s\n", portString)
 	http.Handle("/hello", web.GetHello(friendly))
-	http.Handle("/metrics", web.PostMetric())
 	http.ListenAndServe(portString, nil)
 }
