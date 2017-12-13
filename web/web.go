@@ -42,7 +42,7 @@ func NewMetric(name string, value float64) *Metric {
 	}
 }
 
-// MillisecondTimestamp converts the timestamp to millisecond precision
-func (m *Metric) MillisecondTimestamp() int64 {
+// MicrosecondTimestamp converts the timestamp to millisecond precision
+func (m *Metric) MicrosecondTimestamp() int64 {
 	return m.Timestamp / 1000
 }
