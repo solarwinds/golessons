@@ -33,7 +33,7 @@ func PostMetric(metricsChan chan<- *Metric) http.Handler {
 // ProcessMetrics takes a Metrics channel and a control channel and implements processing logic
 // until told to stop
 func ProcessMetrics(metricsChan <-chan *Metric, stopChan <-chan bool) {
-P:
+P: // a Label in Go is like a GOTO in C
 	for {
 		select {
 		case m := <-metricsChan:
