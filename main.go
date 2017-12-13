@@ -76,9 +76,6 @@ func turnOffWhenTimeExpires() {
 func processSigInt() {
 	<-sigIntChan // NOTE: this blocks until there's something on the channel!
 
-	close(metricsChan)
-	close(stopChan)
-
 	fmt.Printf("\n[-] Caught interrupt\n")
 	runDuration := time.Since(startTime)
 	fmt.Printf("[*] Process ran for %v seconds\n", runDuration)
