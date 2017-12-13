@@ -13,7 +13,7 @@ func TestMetric_MillisecondTimestamp(t *testing.T) {
 		Timestamp: in,
 	}
 
-	result := metric.MillisecondTimestamp()
+	result := metric.MicrosecondTimestamp()
 
 	if result != out {
 		t.Errorf("expected %d to equal %d but it didn't", result, out)
