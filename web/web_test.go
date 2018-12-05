@@ -1,6 +1,8 @@
 package web
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -29,8 +31,14 @@ func TestMetric_MillisecondTimestamp(t *testing.T) {
 func TestPostMetric_MockProcessor(t *testing.T) {
 	testChan := make(chan *processors.Metric)
 	testProcessor := processors.NewMockMetricProcessor()
+	testMetric := &processors.Metric{
+		Name:      "Test",
+		Value:     1.23,
+		Timestamp: 1544046763,
+	}
+	jsonMetric, _ := json.Marshal(testMetric)
 
-	req, err := http.NewRequest("POST", "/metrics", nil)
+	req, err := http.NewRequest("POST", "/metrics", bytes.NewBuffer(jsonMetric))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,8 +48,8 @@ func TestPostMetric_MockProcessor(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusOK {
+	if status := rr.Code; status != http.StatusAccepted {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, http.StatusAccepted)
 	}
 }
