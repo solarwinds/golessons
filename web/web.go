@@ -4,30 +4,27 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
-)
 
-// A struct lets us define a complex data type
-type Metric struct {
-	Name      string  `json:"name"`
-	Value     float64 `json:"value"`
-	Timestamp int64   `json:"timestamp"`
-}
+	"github.com/solarwinds/golessons/processors"
+)
 
 var stopProcessing bool
 
 // PostMetric processes metrics
-func PostMetric(metricsChan chan<- *Metric) http.Handler {
+func PostMetric(metricsChan chan<- *processors.Metric, metricProcessor processors.Processor) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !stopProcessing {
-			var m = &Metric{}
+			var m = &processors.Metric{}
 			decoder := json.NewDecoder(r.Body)
 			if err := decoder.Decode(m); err != nil {
 				log.Println(err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			metricsChan <- m
+			err := metricProcessor.ProcessMetric(m)
+			if err != nil {
+				w.WriteHeader(http.StatusBadGateway)
+			}
 			w.WriteHeader(http.StatusAccepted)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
@@ -37,7 +34,7 @@ func PostMetric(metricsChan chan<- *Metric) http.Handler {
 
 // ProcessMetrics takes a Metrics channel and a control channel and implements processing logic
 // until told to stop
-func ProcessMetrics(metricsChan <-chan *Metric, stopChan <-chan bool) {
+func ProcessMetrics(metricsChan <-chan *processors.Metric, stopChan <-chan bool) {
 P:
 	for {
 		select {
@@ -53,7 +50,7 @@ P:
 // GetHello's HTTP handler now creates and serializes a Metric
 func GetHello(friendly bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		metric := NewMetric("cpu", 23.1234)
+		metric := processors.NewMetric("cpu", 23.1234)
 
 		// reduce timestamp precision if `friendly` is true
 		if friendly {
@@ -67,23 +64,4 @@ func GetHello(friendly bool) http.Handler {
 		}
 		w.Write(bodyData)
 	})
-}
-
-// NewMetric is a constructor for a Metric
-func NewMetric(name string, value float64) *Metric {
-	return &Metric{
-		Name:      name,
-		Value:     value,
-		Timestamp: time.Now().UTC().UnixNano(),
-	}
-}
-
-// MicrosecondTimestamp converts the timestamp to millisecond precision
-func (m *Metric) MicrosecondTimestamp() int64 {
-	return m.Timestamp / 1000
-}
-
-// ReduceTimestampPrecision changes the precision to be millisecond
-func (m *Metric) ReduceTimestampPrecision() {
-	m.Timestamp = m.MicrosecondTimestamp()
 }

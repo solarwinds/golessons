@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/solarwinds/golessons/processors"
 	"github.com/solarwinds/golessons/web"
 )
 
@@ -17,8 +18,9 @@ import (
 var startTime = time.Now()
 
 var sigIntChan = make(chan os.Signal, 1)
-var metricsChan = make(chan *web.Metric)
+var metricsChan = make(chan *processors.Metric)
 var stopChan = make(chan bool)
+var metricsProcessor = processors.NewAsyncMetricProcessor(metricsChan)
 
 // friendly is a variable that is in scope everywhere in the main package
 var friendly bool
@@ -85,6 +87,6 @@ func processSigInt() {
 func muxAndServe(portString string) {
 	fmt.Printf("binding to %s\n", portString)
 	http.Handle("/hello", web.GetHello(friendly))
-	http.Handle("/metrics", web.PostMetric(metricsChan))
+	http.Handle("/metrics", web.PostMetric(metricsChan, metricsProcessor))
 	http.ListenAndServe(portString, nil)
 }
