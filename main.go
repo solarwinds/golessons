@@ -21,11 +21,10 @@ func init() {
 	flag.Parse()
 }
 
-
 func main() {
 	if friendly {
 		fmt.Println("Hello, Gophers!")
-	}else{
+	} else {
 		fmt.Println("Goodbye, Gophers.")
 	}
 
