@@ -4,8 +4,8 @@ import (
 	"fmt"
 	// flag is a package from the standard library for parsing CLI flags
 	"flag"
-	"net/http"
 	"github.com/solarwinds/golessons/web"
+	"net/http"
 )
 
 // friendly is a variable that is in scope everywhere in the main package
@@ -23,11 +23,10 @@ func init() {
 	flag.Parse()
 }
 
-
 func main() {
 	if friendly {
 		fmt.Println("Happy to see you, Gophers!")
-	}else{
+	} else {
 		fmt.Println("Ugh, now I see Gophers.")
 	}
 
